@@ -47,7 +47,6 @@
     body.layout-emerald .container,
     body.layout-emerald .profile-card,
     body.layout-emerald .score-card,
-    body.layout-emerald .friends-card,
     body.layout-emerald .online-main-card {
       border-color: #047857;
       box-shadow: 0 20px 50px rgba(4, 120, 87, 0.45);
@@ -56,7 +55,6 @@
     body.layout-crimson .container,
     body.layout-crimson .profile-card,
     body.layout-crimson .score-card,
-    body.layout-crimson .friends-card,
     body.layout-crimson .online-main-card {
       border-color: #b91c1c;
       box-shadow: 0 20px 50px rgba(185, 28, 28, 0.5);
@@ -65,7 +63,6 @@
     body.layout-galaxy .container,
     body.layout-galaxy .profile-card,
     body.layout-galaxy .score-card,
-    body.layout-galaxy .friends-card,
     body.layout-galaxy .online-main-card {
       border-color: #7c3aed;
       box-shadow: 0 20px 60px rgba(124, 58, 237, 0.6);
@@ -166,7 +163,6 @@
       position: relative;
     }
 
-    .friends-card {
       flex: 1 1 260px;
       background: #020617;
       border-radius: 18px;
@@ -186,7 +182,6 @@
       min-width: 0;
     }
 
-    .friends-card h2,
     .online-main-card h2 {
       margin: 0 0 10px;
       font-size: 1.1rem;
@@ -889,80 +884,6 @@
       background: #1f2937;
     }
 
-    /* Freunde */
-    .friends-list {
-      margin-top: 4px;
-      max-height: 120px;
-      overflow-y: auto;
-      border-radius: 10px;
-      border: 1px solid #111827;
-      padding: 4px 6px;
-      background: #020617;
-    }
-
-    .friend-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      padding: 2px 0;
-      gap: 4px;
-    }
-
-    .friend-main {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .friend-name {
-      font-weight: 500;
-    }
-
-    .friend-status {
-      font-size: 0.7rem;
-      color: #6b7280;
-    }
-
-    .friend-remove-btn {
-      border-radius: 999px;
-      border: 1px solid #111827;
-      background: #020617;
-      padding: 2px 6px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      color: #9ca3af;
-    }
-
-    .friend-remove-btn:hover {
-      background: #111827;
-      color: #fca5a5;
-    }
-
-    .friends-add-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-
-    .friends-add-row input {
-      max-width: 140px;
-      padding: 4px 8px;
-      font-size: 0.8rem;
-    }
-
-    .friends-add-row button {
-      padding: 5px 10px;
-      font-size: 0.8rem;
-    }
-
-    .friends-note {
-      font-size: 0.7rem;
-      color: #6b7280;
-      margin-top: 2px;
-    }
-
     /* Cosmetics + Layout Modal */
     .cosmetics-modal-backdrop,
     .layout-modal-backdrop {
@@ -1324,7 +1245,6 @@
       .score-card,
       .container,
       .profile-card,
-      .friends-card,
       .online-main-card {
         display: none;
       }
@@ -1341,7 +1261,6 @@
         display: block;
       }
 
-      body.mobile-panel-friends .friends-card {
         display: block;
       }
 
@@ -1352,7 +1271,6 @@
       .container,
       .score-card,
       .profile-card,
-      .friends-card,
       .online-main-card {
         width: 100%;
         padding: 16px;
@@ -1406,7 +1324,6 @@
 
       .history,
       .scoreboard-list,
-      .friends-list {
         max-height: 200px;
       }
 
@@ -2162,28 +2079,6 @@
       </button>
     </div>
 
-    <div class="friends-card">
-      <h2>Freundesliste</h2>
-
-      <div class="profile-stat-row">
-        <span class="label">Freunde gesamt</span>
-        <span class="value" id="stat-friends-count">0</span>
-      </div>
-
-      <div id="friends-list" class="friends-list">
-        <!-- Freundeeinträge -->
-      </div>
-
-      <div class="friends-add-row">
-        <input id="friend-name-input" type="text" maxlength="20" placeholder="Freundesname" />
-        <button id="friend-add-btn" type="button">Hinzufügen</button>
-      </div>
-
-      <div class="friends-note">
-        Deine Freundesliste ist lokal gespeichert. Später kannst du hier Freunde direkt zu Online-Duellen einladen.
-      </div>
-    </div>
-
     <!-- Online-Tab als eigener Card -->
     <div id="online-main-card" class="online-main-card">
       <h2>Online</h2>
@@ -2598,7 +2493,6 @@
           if (!stats.layoutsUnlocked) stats.layoutsUnlocked = ["default"];
           if (!stats.activeLayout) stats.activeLayout = "default";
           if (typeof stats.coins !== "number") stats.coins = 0;
-          if (!Array.isArray(stats.friends)) stats.friends = [];
         }
       } catch (e) {
         console.warn("Konnte Stats nicht laden:", e);
@@ -2680,7 +2574,6 @@
       layoutNameEl.textContent = activeLayout.name;
 
       const friendsCountEl = document.getElementById("stat-friends-count");
-      friendsCountEl.textContent = (stats.friends || []).length;
 
       renderScoreboard();
     }
@@ -2833,80 +2726,6 @@
       renderStats();
     });
 
-    // ---------- Freunde ----------
-    const friendsListEl = document.getElementById("friends-list");
-    const friendNameInput = document.getElementById("friend-name-input");
-    const friendAddBtn = document.getElementById("friend-add-btn");
-
-    function renderFriends() {
-      const friends = stats.friends || [];
-      const countEl = document.getElementById("stat-friends-count");
-      countEl.textContent = friends.length;
-
-      friendsListEl.innerHTML = "";
-      if (friends.length === 0) {
-        friendsListEl.innerHTML = '<div class="small">Noch keine Freunde hinzugefügt. Füge Namen hinzu, um später Online-Duelle zu starten.</div>';
-        return;
-      }
-
-      friends.forEach((f, index) => {
-        const item = document.createElement("div");
-        item.className = "friend-item";
-
-        const main = document.createElement("div");
-        main.className = "friend-main";
-
-        const name = document.createElement("div");
-        name.className = "friend-name";
-        name.textContent = f.name;
-
-        const status = document.createElement("div");
-        status.className = "friend-status";
-        status.textContent = "Status: offline (Online-Modus folgt)";
-
-        main.appendChild(name);
-        main.appendChild(status);
-
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "friend-remove-btn";
-        btn.textContent = "Entfernen";
-        btn.addEventListener("click", () => {
-          stats.friends.splice(index, 1);
-          saveStats();
-          renderFriends();
-        });
-
-        item.appendChild(main);
-        item.appendChild(btn);
-
-        friendsListEl.appendChild(item);
-      });
-    }
-
-    friendAddBtn.addEventListener("click", () => {
-      const raw = friendNameInput.value.trim();
-      if (!raw) {
-        alert("Bitte gib einen Freundesnamen ein.");
-        return;
-      }
-      if (raw.length < 3) {
-        alert("Der Name sollte mindestens 3 Zeichen haben.");
-        return;
-      }
-
-      stats.friends = stats.friends || [];
-      const exists = stats.friends.some(f => f.name.toLowerCase() === raw.toLowerCase());
-      if (exists) {
-        alert("Dieser Freund ist bereits in deiner Liste.");
-        return;
-      }
-
-      stats.friends.push({ name: raw });
-      friendNameInput.value = "";
-      saveStats();
-      renderFriends();
-    });
 
     // ---------- Cosmetics Modal ----------
     const cosmeticsModal = document.getElementById("cosmetics-modal");
@@ -4762,6 +4581,4 @@ document
 <!-- ================================================================ -->
 
 </body>
-</html>
-
-
+</html>    
